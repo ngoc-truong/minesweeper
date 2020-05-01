@@ -41,7 +41,7 @@ const Game = ( () => {
         return _board;
     };
 
-    // Does not work correctly, some empty rows don't show up
+    
     const showBoard = () => {
         for (let i = 0; i < _board.length; i++) {
             let row = "";
@@ -77,6 +77,10 @@ const Game = ( () => {
 
             _board[y][x].value = "X";
         });
+    }
+
+    const addNumbersToBoard = () => {
+        
     }
 
     // Helper functions
