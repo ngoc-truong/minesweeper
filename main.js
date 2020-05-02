@@ -167,20 +167,21 @@ const Board = (columns, rows, mines) => {
         return false;
     }
 
-    return { getBoard, showBoard, getNumOfColumns, getNumOfRows, getNumOfMines };
+    return { createCompleteBoard, showBoard, getBoard, getNumOfColumns, getNumOfRows, getNumOfMines };
 };
 
 
 // DOM module: Everything related to creating and updating the DOM
 const DOM = ( () => {
-    let _fields;
+    let board; 
+    let fields;
     const container     = document.querySelector("#game-container");
     const beginner      = document.querySelector("#beginner");
     const intermediate  = document.querySelector("#intermediate");
     const expert        = document.querySelector("#expert");
 
     const getBoard = () => {
-        return this._board;
+        return board;
     }
 
     const createDom = (difficulty) => {
@@ -249,9 +250,9 @@ const DOM = ( () => {
     };
 
     const revealFieldAfterClick = () => {
-        _fields = document.querySelectorAll(".field");
+        fields = document.querySelectorAll(".field");
 
-        _fields.forEach( (field) => {
+        fields.forEach( (field) => {
             field.addEventListener("click", (e) => {
                 field.textContent = field.value;            // Look coordinates up in Dom._board (instead of saving value in html);
             });
