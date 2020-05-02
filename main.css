@@ -1,0 +1,17 @@
+#settings {
+    text-align: center;
+}
+
+
+#game-container{
+    display: grid;
+    background-color: green;
+    margin: 0 auto;
+    width: 80%;
+}
+
+.field {
+    width: 40px;
+    height: 40px;
+    float: left;
+}

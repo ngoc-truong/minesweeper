@@ -1,12 +1,4 @@
-/* 
-    Minesweeper 
-
-    Beginner: 9 rows, 9 columns, 10 mines
-    Intermediate: 16 rows, 16 columns, 40 mines
-    Expert: 16 rows, 30 columns, 99 mines
-*/
-
-/* Factory function for a field */
+/* Factoryfunction for fields */
 // value could be a number, nothing, or a mine
 const Field = (x, y, value) => {
     let revealed = false;
@@ -15,10 +7,14 @@ const Field = (x, y, value) => {
         revealed = true;
     }
 
-    return {x, y, value, reveal};
+    const getReveal = () => {
+        return revealed;
+    }
+
+    return {x, y, value, getReveal};
 }
 
-// Board module (because only need one Board)
+// Board module: Everything related to creating the game board
 const Board = ( () => {
     let _board = [];
     let _numOfColumns = 0; 
@@ -26,6 +22,7 @@ const Board = ( () => {
     let _mine = "X";
 
     const createCompleteBoard = (columns, rows, numOfMines) => {
+        _board = [];
         createEmptyBoard(columns, rows);
         _numOfColumns = _board.length === 0 ? 0 : _board[0].length;
         _numOfRows = _board.length;
@@ -156,7 +153,112 @@ const Board = ( () => {
         return false;
     }
 
-    return { createCompleteBoard, getBoard, showBoard };
+    return { createCompleteBoard, getBoard };
 })();
 
-Board.createCompleteBoard(9, 9, 10);
+// DOM module: Everything related to creating and updating the DOM
+const DOM = ( () => {
+    let _board;
+    let _fields;
+    const container     = document.querySelector("#game-container");
+    const beginner      = document.querySelector("#beginner");
+    const intermediate  = document.querySelector("#intermediate");
+    const expert        = document.querySelector("#expert");
+
+    const createDom = (difficulty) => {
+        clearDom();
+        columns = _board[0].length;
+
+       
+        if (difficulty === "beginner"){
+            container.setAttribute("style", "width: 24% !important");
+        } else if (difficulty === "intermediate") {
+            container.setAttribute("style", "width: 42% !important");
+        } else {
+            container.setAttribute("style", "width: 79% !important");
+        }
+
+        container.setAttribute("style", `grid-template-columns: repeat(${columns}, 1fr)`)
+
+
+        for (let row = 0; row < _board.length; row++){
+            for (let col = 0; col < _board[0].length; col++){
+                let fieldContainer = document.createElement("div");
+                fieldContainer.classList.add("field-container");
+
+                let field = document.createElement("button");
+                field.classList.add("field");
+                field.value = _board[row][col].value;                   // Delete this (because user can cheat);
+                field.dataset.row = row;
+                field.dataset.col = col;
+                field.dataset.revealed = _board[row][col].getReveal();
+                field.textContent = "";
+
+                fieldContainer.appendChild(field);
+                container.appendChild(fieldContainer);
+            }
+        }
+    };
+
+    const clearDom = () => {
+        while(container.firstChild) {
+            container.removeChild(container.lastChild);
+        }
+    }
+
+    const createBoard = () => {
+        beginner.addEventListener("click", (e) => {
+            Board.createCompleteBoard(9, 9, 10);
+            _board = Board.getBoard(); 
+            createDom("beginner");
+            revealFieldAfterClick();
+        });
+
+        intermediate.addEventListener("click", (e) => {
+            Board.createCompleteBoard(16, 16, 40);
+            _board = Board.getBoard();
+            createDom("intermediate");
+            revealFieldAfterClick();
+        });
+
+        expert.addEventListener("click", (e) => {
+            Board.createCompleteBoard(30, 16, 99);
+            _board = Board.getBoard();
+            createDom("expert");
+            revealFieldAfterClick();
+        });
+    };
+
+    const revealFieldAfterClick = () => {
+        _fields = document.querySelectorAll(".field");
+
+        _fields.forEach( (field) => {
+            field.addEventListener("click", (e) => {
+                field.textContent = field.value;            // Look coordinates up in Dom._board (instead of saving value in html);
+            });
+        });
+    }
+
+    return { createBoard };
+})();
+
+// Game module: Game logic and start
+
+DOM.createBoard();
+
+
+/* ToDo
+    - Better if only coordinates are saved in a field => on click app should look up in database => no cheating possible
+    - When clicking on a "0" all neighboring "0"s should open as well => Recursion?
+    - When clicking on an "X" end the game
+    - When alle fields are revealed, end the game
+    - Dynamically change width of container when choosing a level (beginner, ...)
+    - Styling: Numbers, fields, buttons (retro style like the windows version?)
+
+
+    Nice to have
+    - Timer to measure time
+    - Save times in localstorage
+
+*/
+
