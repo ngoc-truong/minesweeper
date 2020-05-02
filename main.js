@@ -7,69 +7,82 @@ const Field = (x, y, value) => {
         revealed = true;
     }
 
-    const getReveal = () => {
+    const fieldRevealed = () => {
         return revealed;
     }
 
-    return {x, y, value, getReveal};
+    return {x, y, value, reveal, fieldRevealed};
 }
 
 // Board module: Everything related to creating the game board
-const Board = ( () => {
-    let _board = [];
-    let _numOfColumns = 0; 
-    let _numOfRows = 0; 
-    let _mine = "X";
+const Board = (columns, rows, mines) => {
+    let board = [];
+    let numOfColumns = columns;
+    let numOfRows = rows;
+    let numOfMines = mines;
+    let mineSymbol = "X";
 
-    const createCompleteBoard = (columns, rows, numOfMines) => {
-        _board = [];
-        createEmptyBoard(columns, rows);
-        _numOfColumns = _board.length === 0 ? 0 : _board[0].length;
-        _numOfRows = _board.length;
+    const getBoard = () => {
+        return board;
+    }
+
+    const getNumOfColumns = () => {
+        return numOfColumns;
+    }
+
+    const getNumOfRows = () => {
+        return numOfRows;
+    }
+
+    const getNumOfMines = () => {
+        return numOfMines;
+    }
+
+    const showBoard = () => {
+        if (board.length !== 0) {
+            for (let i = 0; i < numOfRows; i++) {
+                let row = "";
+                for (j = 0; j < numOfColumns; j++){
+                    row += board[i][j].value;
+                }
+                console.log(row);
+            }
+        } else {
+            console.log("Nothing in here, buddy!");
+        }
+    }
+
+    const createCompleteBoard = () => {
+        board = [];
+        createEmptyBoard();
 
         // Add mines
-        let mines = createMines(numOfMines);
+        let mines = createMines();
         addMinesToBoard(mines);
 
         // Add numbers
         addNumbersToBoard();
-    }
+    };
 
-    const createEmptyBoard = (columns, rows) => {
-        for (let row = 0; row < rows; row++){
+    const createEmptyBoard = () => {
+        for (let row = 0; row < numOfRows; row++){
 
             let completeRow = []
-            for (let col = 0; col < columns; col++){
+            for (let col = 0; col < numOfColumns; col++){
                 let field = Field(col, row, "o");
                 completeRow.push(field);
             }
-            _board.push(completeRow);
+            board.push(completeRow);
         }
-        return _board;
+        return board;
     };
 
-    const getBoard = () => {
-        return _board;
-    }
-
-    const showBoard = () => {
-        for (let i = 0; i < _numOfRows; i++) {
-            let row = "";
-            for (j = 0; j < _numOfColumns; j++){
-                row += _board[i][j].value;
-            }
-            console.log(row);
-        }
-    }
-
-    const createMines = (numOfMines) => {
+    const createMines = () => {
         let mines = [];
 
         while (mines.length < numOfMines) {
-            let boardcolumns  = _board[0].length;
-            let boardrows = _board.length;
-            let randomX = Math.floor(Math.random() * boardcolumns);
-            let randomY = Math.floor(Math.random() * boardrows);
+            let randomX = Math.floor(Math.random() * numOfColumns);
+            let randomY = Math.floor(Math.random() * numOfRows);
 
             // No mine should be on the same field (no duplicates)
             if (!arrayWithArrayIncludesArray(mines, [randomX, randomY])){
@@ -86,21 +99,22 @@ const Board = ( () => {
             let y = mine[1];
 
             // Attention: x = columns, y = rows, so we have to switch
-            _board[y][x].value = _mine;
+            board[y][x].value = mineSymbol;
         });
     }
 
     const addNumbersToBoard = () => {
-        for (let row = 0; row < _numOfRows; row++){
-            for (let column = 0; column < _numOfColumns; column++){
+        for (let row = 0; row < numOfRows; row++){
+            for (let column = 0; column < numOfColumns; column++){
                 setSumOfNeighboringMines(column, row);
             }
         }
     }
 
+    // Here column = x, row = y => coordinates! (not number of columns/rows)
     const setSumOfNeighboringMines = (column, row) => {
         // If coordinates are mines, they should not change-
-        if (_board[row][column].value === _mine){
+        if (board[row][column].value === mineSymbol){
             return; 
         }
 
@@ -112,21 +126,21 @@ const Board = ( () => {
         let endColumn;
         
         column === 0 ? startColumn = column : startColumn = column - 1;
-        column === _numOfColumns - 1? endColumn = column : endColumn = column + 1;
+        column === numOfColumns - 1? endColumn = column : endColumn = column + 1;
         row === 0 ? startRow = row : startRow = row - 1;
-        row === _numOfRows - 1? endRow = row : endRow = row + 1;
+        row === numOfRows - 1? endRow = row : endRow = row + 1;
 
         // Calculate sum of neighboring mines
         let sum = 0;
 
         for (let i = startRow; i <= endRow; i++ ){
             for (let j = startColumn; j <= endColumn; j++) {
-                if (_board[i][j].value === _mine) {
+                if (board[i][j].value === mineSymbol) {
                     sum++; 
                 }
             }
         }
-        _board[row][column].value = sum;
+        board[row][column].value = sum;
     }
 
     // Helper functions
@@ -153,8 +167,9 @@ const Board = ( () => {
         return false;
     }
 
-    return { createCompleteBoard, getBoard, showBoard };
-})();
+    return { getBoard, showBoard, getNumOfColumns, getNumOfRows, getNumOfMines };
+};
+
 
 // DOM module: Everything related to creating and updating the DOM
 const DOM = ( () => {
@@ -258,6 +273,7 @@ DOM.createBoard();
     - When alle fields are revealed, end the game
     - Dynamically change width of container when choosing a level (beginner, ...)
     - Styling: Numbers, fields, buttons (retro style like the windows version?)
+    - Make Board a class/factory (because I want to use all the board methods somewhere else. Not possible in a module)
 
 
     Nice to have
