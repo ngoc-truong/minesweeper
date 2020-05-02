@@ -153,21 +153,24 @@ const Board = ( () => {
         return false;
     }
 
-    return { createCompleteBoard, getBoard };
+    return { createCompleteBoard, getBoard, showBoard };
 })();
 
 // DOM module: Everything related to creating and updating the DOM
 const DOM = ( () => {
-    let _board;
     let _fields;
     const container     = document.querySelector("#game-container");
     const beginner      = document.querySelector("#beginner");
     const intermediate  = document.querySelector("#intermediate");
     const expert        = document.querySelector("#expert");
 
+    const getBoard = () => {
+        return this._board;
+    }
+
     const createDom = (difficulty) => {
         clearDom();
-        columns = _board[0].length;
+        columns = this._board[0].length;
 
        
         if (difficulty === "beginner"){
@@ -181,17 +184,17 @@ const DOM = ( () => {
         container.setAttribute("style", `grid-template-columns: repeat(${columns}, 1fr)`)
 
 
-        for (let row = 0; row < _board.length; row++){
-            for (let col = 0; col < _board[0].length; col++){
+        for (let row = 0; row < this._board.length; row++){
+            for (let col = 0; col < this._board[0].length; col++){
                 let fieldContainer = document.createElement("div");
                 fieldContainer.classList.add("field-container");
 
                 let field = document.createElement("button");
                 field.classList.add("field");
-                field.value = _board[row][col].value;                   // Delete this (because user can cheat);
+                field.value = this._board[row][col].value;                   // Delete this (because user can cheat);
                 field.dataset.row = row;
                 field.dataset.col = col;
-                field.dataset.revealed = _board[row][col].getReveal();
+                field.dataset.revealed = this._board[row][col].getReveal();
                 field.textContent = "";
 
                 fieldContainer.appendChild(field);
@@ -209,21 +212,22 @@ const DOM = ( () => {
     const createBoard = () => {
         beginner.addEventListener("click", (e) => {
             Board.createCompleteBoard(9, 9, 10);
-            _board = Board.getBoard(); 
+            this._board = Board.getBoard(); 
             createDom("beginner");
             revealFieldAfterClick();
         });
 
         intermediate.addEventListener("click", (e) => {
             Board.createCompleteBoard(16, 16, 40);
-            _board = Board.getBoard();
+            this._board = Board.getBoard();
             createDom("intermediate");
             revealFieldAfterClick();
         });
 
         expert.addEventListener("click", (e) => {
             Board.createCompleteBoard(30, 16, 99);
-            _board = Board.getBoard();
+            this._board = Board.getBoard();
+            console.log(typeof (this._board));
             createDom("expert");
             revealFieldAfterClick();
         });
@@ -239,7 +243,7 @@ const DOM = ( () => {
         });
     }
 
-    return { createBoard };
+    return { createBoard, getBoard };
 })();
 
 // Game module: Game logic and start
@@ -262,3 +266,18 @@ DOM.createBoard();
 
 */
 
+/*
+Pseudocode:
+
+function revealNeighborsIfZero(column, row) {
+    if (field[row][column] === 0) {
+        Loop through the neighbors (row)
+            Loop through the neighbors (column)
+                Open neighbor if it's not already opened
+                revealNeighborsIfZero(column, row);
+                // Or here? Open neighbor if it's not already opened
+    }
+    return;
+}
+
+*/
