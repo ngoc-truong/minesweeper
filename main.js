@@ -11,7 +11,11 @@ const Field = (x, y, value) => {
         return revealed;
     }
 
-    return {x, y, value, reveal, fieldRevealed};
+    const getCoordinates = () => {
+        return `(${x}, ${y})`;
+    }
+
+    return {x, y, value, reveal, fieldRevealed, getCoordinates};
 }
 
 // Board factoryfunction: Everything related to creating the game board
@@ -22,6 +26,7 @@ const Board = (columns, rows, mines) => {
     let numOfMines = mines;
     let mineSymbol = "X";
 
+    // Getter and setter methods
     const getBoard = () => {
         return board;
     }
@@ -36,6 +41,10 @@ const Board = (columns, rows, mines) => {
 
     const getNumOfMines = () => {
         return numOfMines;
+    }
+
+    const getMineSymbol = () => {
+        return mineSymbol; 
     }
 
     const showBoard = () => {
@@ -186,12 +195,12 @@ const Board = (columns, rows, mines) => {
         return false;
     }
 
-    return { createCompleteBoard, showBoard, getBoard, getNumOfColumns, getNumOfRows, getNumOfMines, getNeighborCoordinates };
+    return { createCompleteBoard, showBoard, getBoard, getNumOfColumns, getNumOfRows, getNumOfMines, getNeighborCoordinates, getMineSymbol };
 };
 
 
-// DOM module: Everything related to creating and updating the DOM
-const DOM = ( () => {
+// Game module (including everything related to the DOM)
+const Game = ( () => {
     let board; 
     let fields;
     const container     = document.querySelector("#game-container");
@@ -200,12 +209,40 @@ const DOM = ( () => {
     const expert        = document.querySelector("#expert");
 
     // Getter and setter methods
-    const getBoard = () => {
+
+    const getBoardObject = () => {
         return board;
+    };
+    
+    const getAllNumbers = () => {
+        let numbers = [];
+
+        board.getBoard().forEach( (row) => {
+            row.forEach( (field) => {
+                if (field.value !== board.getMineSymbol()){
+                    numbers.push(field);
+                }
+            });
+        });
+        return numbers;
     }
 
-    // Initalize methods
-    const createBoard = () => {
+    // Works with numbers and "X" or board.getMineSymbol()
+    const getAllOf = (symbol) => {
+        let elements = [];
+
+        board.getBoard().forEach( (row) => {
+            row.forEach( (field) => {
+                if (field.value === symbol){
+                    elements.push(field);
+                }
+            });
+        });
+        return elements; 
+    }
+
+    // Game logic methods
+    const start = () => {
         beginner.addEventListener("click", (e) => {
             board = Board(9, 9, 10);
             board.createCompleteBoard();
@@ -229,6 +266,33 @@ const DOM = ( () => {
         });
     };
 
+    const won = () => {
+        let numbers = getAllNumbers();
+
+        // Is every number revealed?
+        let alreadyWon = numbers.every( (number) => number.fieldRevealed());
+        return alreadyWon;
+    }
+
+    const lost = (clickedField) =>  {
+        // Change color of target click 
+        clickedField.classList.add("lost");
+
+        // Reveal all bombs
+        let bombs = getAllOf(board.getMineSymbol());
+        revealAll(bombs);
+        disableFields();
+
+        // TODO: Change smiley icon to restart
+    };
+
+    const disableFields = () => {
+        fields.forEach ( (field) => {
+            field.disabled = true;
+        })
+    }
+
+    // DOM methods
     const createDom = (difficulty) => {
         clearDom();
 
@@ -272,6 +336,14 @@ const DOM = ( () => {
         }
     }
 
+    const revealAll = (array) => {
+        array.forEach ( (field) => {
+            board.getBoard()[field.y][field.x].reveal();
+            let target = document.querySelector(`#coordinates-${field.x}-${field.y}`);
+            target.textContent = field.value;
+        })
+    };
+
     const revealFieldAfterClick = () => {
         fields = document.querySelectorAll(".field");
         let toBeRevealed = []
@@ -284,8 +356,20 @@ const DOM = ( () => {
                 revealNeighborsIfZero(col, row, toBeRevealed);
 
                 if (board.getBoard()[row][col].fieldRevealed() === false) {
+                    
+                    field.classList.add(`symbol-${board.getBoard()[row][col].value}`)
                     field.textContent = board.getBoard()[row][col].value;   
                     board.getBoard()[row][col].reveal();
+
+                    // Lost?
+                    if(field.textContent === board.getMineSymbol()){
+                        lost(field);
+                    }
+
+                    // Win? 
+                    if(won()) {
+                        alert("You won!");
+                    }
                 }
             });
         });
@@ -301,7 +385,8 @@ const DOM = ( () => {
                 let x = Number(neighbor[0]);
                 let y = Number(neighbor[1]);
                 let neighborDom = document.querySelector(`#coordinates-${x}-${y}`);
-                
+                neighborDom.classList.add(`symbol-${board.getBoard()[y][x].value}`)
+
                 // Only reveal neighbors which are currently unrevealed
                 if (board.getBoard()[y][x].fieldRevealed() === false){
                     board.getBoard()[y][x].reveal();
@@ -321,30 +406,21 @@ const DOM = ( () => {
                 } 
             });
         }
-
         return;
     }
-
-    return { createBoard, getBoard, revealNeighborsIfZero};
+    
+    return { start, getBoardObject, getAllNumbers, getAllOf, revealAll  };
 })();
 
-// Game module: Game logic and start
-
-DOM.createBoard();
+Game.start();
 
 
 /* ToDo
-    - When clicking on an "X" end the game
-    - When all fields are revealed, end the game
     - Dynamically change width of container when choosing a level (beginner, ...)
     - Styling: Numbers, fields, buttons (retro style like the windows version?)
+    - Important styling: Show all 0 (or at least in a different color then unrevealed fields)
 
     Nice to have
     - Timer to measure time
     - Save times in localstorage
-*/
-
-/*
-Pseudocode:
-
 */
