@@ -1,5 +1,5 @@
-/* Factoryfunction for fields */
-// value could be a number, nothing, or a mine
+// Fields factory function
+// Mhh, usually factory functions are camelCase... but I am so used to classes. Maybe stick to class/prototype?
 const Field = (x, y, value) => {
     let revealed = false;
 
@@ -14,7 +14,7 @@ const Field = (x, y, value) => {
     return {x, y, value, reveal, fieldRevealed};
 }
 
-// Board module: Everything related to creating the game board
+// Board factoryfunction: Everything related to creating the game board
 const Board = (columns, rows, mines) => {
     let board = [];
     let numOfColumns = columns;
@@ -118,29 +118,48 @@ const Board = (columns, rows, mines) => {
             return; 
         }
 
-        // Set coordinates of neighbors (for edge cases and normal cases)
-        // Refactor to own function?
+        // Calculate sum of neighboring mines
+        let sum = 0;
+        let neighbors = getNeighborCoordinates(column, row);
+
+        neighbors.forEach( (neighbor) => {
+            let x = neighbor[0];
+            let y = neighbor[1];
+            if (board[y][x].value === mineSymbol) {
+                sum++
+            }
+        })
+        
+        board[row][column].value = sum;
+    }
+
+    // Mhh something wrong here, especially when used in DOM
+    const getNeighborCoordinates = (column, row) => {
+        // Convert to number
+        column = Number(column);
+        row = Number(row);
+
         let startRow;
         let endRow;
         let startColumn;
         let endColumn;
-        
+        let neighbors = [];
+
+        // Set start and end values for for-loop, depending on coordinates
         column === 0 ? startColumn = column : startColumn = column - 1;
         column === numOfColumns - 1? endColumn = column : endColumn = column + 1;
         row === 0 ? startRow = row : startRow = row - 1;
         row === numOfRows - 1? endRow = row : endRow = row + 1;
 
-        // Calculate sum of neighboring mines
-        let sum = 0;
-
         for (let i = startRow; i <= endRow; i++ ){
             for (let j = startColumn; j <= endColumn; j++) {
-                if (board[i][j].value === mineSymbol) {
-                    sum++; 
+                if ( !(i === row && j === column) ) { // Do not add original field into neighbors
+                    neighbors.push([j, i]);
                 }
             }
         }
-        board[row][column].value = sum;
+        
+        return neighbors; 
     }
 
     // Helper functions
@@ -167,7 +186,7 @@ const Board = (columns, rows, mines) => {
         return false;
     }
 
-    return { createCompleteBoard, showBoard, getBoard, getNumOfColumns, getNumOfRows, getNumOfMines };
+    return { createCompleteBoard, showBoard, getBoard, getNumOfColumns, getNumOfRows, getNumOfMines, getNeighborCoordinates };
 };
 
 
@@ -180,14 +199,43 @@ const DOM = ( () => {
     const intermediate  = document.querySelector("#intermediate");
     const expert        = document.querySelector("#expert");
 
+    // Getter and setter methods
     const getBoard = () => {
         return board;
     }
 
+    // Initalize methods
+    const createBoard = () => {
+        beginner.addEventListener("click", (e) => {
+            board = Board(9, 9, 10);
+            board.createCompleteBoard();
+            createDom("beginner");
+            revealFieldAfterClick();
+        });
+
+        intermediate.addEventListener("click", (e) => {
+            board = Board(16, 16, 40);
+            board.createCompleteBoard();
+            createDom("intermediate");
+            revealFieldAfterClick();
+        });
+
+        expert.addEventListener("click", (e) => {
+            board = Board(30, 16, 99);
+            board.createCompleteBoard();
+
+            createDom("expert");
+            revealFieldAfterClick();
+        });
+    };
+
     const createDom = (difficulty) => {
         clearDom();
-        columns = this._board[0].length;
 
+        columns = board.getNumOfColumns();
+        container.setAttribute("style", `grid-template-columns: repeat(${columns}, 1fr)`)
+
+        /*
        
         if (difficulty === "beginner"){
             container.setAttribute("style", "width: 24% !important");
@@ -196,21 +244,20 @@ const DOM = ( () => {
         } else {
             container.setAttribute("style", "width: 79% !important");
         }
+        */
 
-        container.setAttribute("style", `grid-template-columns: repeat(${columns}, 1fr)`)
-
-
-        for (let row = 0; row < this._board.length; row++){
-            for (let col = 0; col < this._board[0].length; col++){
+        for (let row = 0; row < board.getNumOfRows(); row++){
+            for (let col = 0; col < board.getNumOfColumns(); col++){
                 let fieldContainer = document.createElement("div");
                 fieldContainer.classList.add("field-container");
 
                 let field = document.createElement("button");
                 field.classList.add("field");
-                field.value = this._board[row][col].value;                   // Delete this (because user can cheat);
-                field.dataset.row = row;
                 field.dataset.col = col;
-                field.dataset.revealed = this._board[row][col].getReveal();
+                field.dataset.row = row;                
+                field.id = `coordinates-${col}-${row}`;
+                field.dataset.revealed = board.getBoard()[row][col].fieldRevealed();
+                //field.textContent = board.getBoard()[row][col].value;
                 field.textContent = "";
 
                 fieldContainer.appendChild(field);
@@ -225,41 +272,74 @@ const DOM = ( () => {
         }
     }
 
-    const createBoard = () => {
-        beginner.addEventListener("click", (e) => {
-            Board.createCompleteBoard(9, 9, 10);
-            this._board = Board.getBoard(); 
-            createDom("beginner");
-            revealFieldAfterClick();
-        });
-
-        intermediate.addEventListener("click", (e) => {
-            Board.createCompleteBoard(16, 16, 40);
-            this._board = Board.getBoard();
-            createDom("intermediate");
-            revealFieldAfterClick();
-        });
-
-        expert.addEventListener("click", (e) => {
-            Board.createCompleteBoard(30, 16, 99);
-            this._board = Board.getBoard();
-            console.log(typeof (this._board));
-            createDom("expert");
-            revealFieldAfterClick();
-        });
-    };
-
     const revealFieldAfterClick = () => {
         fields = document.querySelectorAll(".field");
+        let toBeRevealed = []
 
         fields.forEach( (field) => {
             field.addEventListener("click", (e) => {
-                field.textContent = field.value;            // Look coordinates up in Dom._board (instead of saving value in html);
+                let col = field.dataset.col;
+                let row = field.dataset.row;
+
+                //revealNeighborsIfZero(col, row);
+                
+                revealNeighborsIfZero(col, row, toBeRevealed);
+
+                if (board.getBoard()[row][col].fieldRevealed() === false) {
+                    field.textContent = board.getBoard()[row][col].value;   
+                    board.getBoard()[row][col].reveal();
+                }
             });
         });
     }
 
-    return { createBoard, getBoard };
+/*
+    Pseudocode
+    function revealNeighborsIfZero(column, row) {
+        if (field[row][column] === 0) {
+            Loop through the neighbors (row)
+                Loop through the neighbors (column)
+                    Open neighbor if it's not already opened
+                    revealNeighborsIfZero(column, row);
+                    // Or here? Open neighbor if it's not already opened
+        }
+        return;
+    }
+*/
+
+    const revealNeighborsIfZero = (col, row, toBeRevealed) => {
+        
+        if (board.getBoard()[row][col].value === 0) {
+            toBeRevealed.push(board.getBoard()[row][col]);
+            let neighbors = board.getNeighborCoordinates(col, row);
+            
+            neighbors.forEach( (neighbor) => {
+                let x = Number(neighbor[0]);
+                let y = Number(neighbor[1]);
+                let neighborDom = document.querySelector(`#coordinates-${x}-${y}`);
+                
+                // Only reveal the fields which are currently unrevealed
+                if (board.getBoard()[y][x].fieldRevealed() === false){
+                    board.getBoard()[y][x].reveal();
+                    neighborDom.textContent = board.getBoard()[y][x].value;
+                }
+                
+                // If neighbor is 0
+                if (board.getBoard()[y][x].value === 0) {
+                    // If neighbor is in the toBeRevealed-Array, do nothing (or else infinite recursion)
+                    if (toBeRevealed.some(field => field.x === Number(x) && field.y === Number(y))){
+                        return;
+                    } else {
+                        revealNeighborsIfZero(x, y, toBeRevealed);
+                    }
+                } 
+            });
+        }
+
+        return;
+    }
+
+    return { createBoard, getBoard, revealNeighborsIfZero};
 })();
 
 // Game module: Game logic and start
@@ -268,33 +348,18 @@ DOM.createBoard();
 
 
 /* ToDo
-    - Better if only coordinates are saved in a field => on click app should look up in database => no cheating possible
     - When clicking on a "0" all neighboring "0"s should open as well => Recursion?
     - When clicking on an "X" end the game
-    - When alle fields are revealed, end the game
+    - When all fields are revealed, end the game
     - Dynamically change width of container when choosing a level (beginner, ...)
     - Styling: Numbers, fields, buttons (retro style like the windows version?)
-    - Make Board a class/factory (because I want to use all the board methods somewhere else. Not possible in a module)
-
 
     Nice to have
     - Timer to measure time
     - Save times in localstorage
-
 */
 
 /*
 Pseudocode:
-
-function revealNeighborsIfZero(column, row) {
-    if (field[row][column] === 0) {
-        Loop through the neighbors (row)
-            Loop through the neighbors (column)
-                Open neighbor if it's not already opened
-                revealNeighborsIfZero(column, row);
-                // Or here? Open neighbor if it's not already opened
-    }
-    return;
-}
 
 */
