@@ -1,5 +1,4 @@
-// Fields factory function
-// Mhh, usually factory functions are camelCase... but I am so used to classes. Maybe stick to class/prototype?
+// Fields factoryfunction
 const Field = (x, y, value) => {
     let revealed = false;
 
@@ -247,6 +246,7 @@ const Game = ( () => {
             board = Board(9, 9, 10);
             board.createCompleteBoard();
             createDom("beginner");
+            container.setAttribute("style", `grid-template-columns: repeat(${columns}, 1fr); width: 26% !important`);
             revealFieldAfterClick();
         });
 
@@ -254,14 +254,15 @@ const Game = ( () => {
             board = Board(16, 16, 40);
             board.createCompleteBoard();
             createDom("intermediate");
+            container.setAttribute("style", `grid-template-columns: repeat(${columns}, 1fr); width: 46.5% !important`);
             revealFieldAfterClick();
         });
 
         expert.addEventListener("click", (e) => {
             board = Board(30, 16, 99);
             board.createCompleteBoard();
-
             createDom("expert");
+            container.setAttribute("style", `grid-template-columns: repeat(${columns}, 1fr); width: 87% !important`);
             revealFieldAfterClick();
         });
     };
@@ -297,23 +298,8 @@ const Game = ( () => {
         clearDom();
 
         columns = board.getNumOfColumns();
-        container.setAttribute("style", `grid-template-columns: repeat(${columns}, 1fr)`)
-
-        /*
-       
-        if (difficulty === "beginner"){
-            container.setAttribute("style", "width: 24% !important");
-        } else if (difficulty === "intermediate") {
-            container.setAttribute("style", "width: 42% !important");
-        } else {
-            container.setAttribute("style", "width: 79% !important");
-        }
-        */
-
         for (let row = 0; row < board.getNumOfRows(); row++){
             for (let col = 0; col < board.getNumOfColumns(); col++){
-                let fieldContainer = document.createElement("div");
-                fieldContainer.classList.add("field-container");
 
                 let field = document.createElement("button");
                 field.classList.add("field");
@@ -321,11 +307,9 @@ const Game = ( () => {
                 field.dataset.row = row;                
                 field.id = `coordinates-${col}-${row}`;
                 field.dataset.revealed = board.getBoard()[row][col].fieldRevealed();
-                //field.textContent = board.getBoard()[row][col].value;
                 field.textContent = "";
 
-                fieldContainer.appendChild(field);
-                container.appendChild(fieldContainer);
+                container.appendChild(field);
             }
         }
     };
@@ -369,6 +353,7 @@ const Game = ( () => {
                     // Win? 
                     if(won()) {
                         alert("You won!");
+                        disableFields();
                     }
                 }
             });
@@ -376,7 +361,6 @@ const Game = ( () => {
     }
 
     const revealNeighborsIfZero = (col, row, toBeRevealed) => {
-        
         if (board.getBoard()[row][col].value === 0) {
             toBeRevealed.push(board.getBoard()[row][col]);
             let neighbors = board.getNeighborCoordinates(col, row);
@@ -408,19 +392,19 @@ const Game = ( () => {
         }
         return;
     }
-    
+
     return { start, getBoardObject, getAllNumbers, getAllOf, revealAll  };
 })();
 
 Game.start();
 
-
 /* ToDo
-    - Dynamically change width of container when choosing a level (beginner, ...)
     - Styling: Numbers, fields, buttons (retro style like the windows version?)
-    - Important styling: Show all 0 (or at least in a different color then unrevealed fields)
+    - Important styling: Show all 0 (or at least in a different co: https://stackoverflow.com/questions/4235426/how-can-i-capture-the-right-click-event-in-javascript
+    - Little bug: If 0 is at the corner and there is no adjacent 0, then the number will be showed
 
     Nice to have
     - Timer to measure time
-    - Save times in localstorage
+    - Save time in localstorage
+    - User can enter own number of rows, columns, mines
 */

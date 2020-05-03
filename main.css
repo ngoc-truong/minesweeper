@@ -1,17 +1,77 @@
+:root {
+    --empty: #bdbdbd;
+    --empty-border: #7b7b7b;
+    --field: #bdbdbd;
+    --field-border-top: #ffffff;
+    --field-border-bottom: #7b7b7b;
+    --color-1: #0000ff;
+    --color-2: #007b00;
+    --color-3: #ff0000;
+    --color-4: #00007b;
+    --color-5: #8c101b;
+    --color-6: #087770;
+    --color-7: #030303;
+    --color-8: #808080;
+    --lost: #ff0000;
+}
+
+body, button {
+    font-family: 'Jost', sans-serif; 
+    font-weight: bold;
+}
+
 #settings {
     text-align: center;
 }
 
-
 #game-container{
     display: grid;
-    background-color: green;
-    margin: 0 auto;
-    width: 80%;
+    margin: 2.5em auto;
 }
 
 .field {
-    width: 40px;
-    height: 40px;
-    float: left;
+    width: 55px;
+    height: 50px;
+    background-color: var(--field);
+    border: 5px solid var(--field);
+    border-left-color: var(--field-border-top);
+    border-top-color: var(--field-border-top);
+    border-right-color: var(--field-border-bottom);
+    border-bottom-color: var(--field-border-bottom);
+    font-size: 1.5em;
+}
+
+.symbol-0 {
+    border: solid 1px var(--empty-border);
+    background-color: var(--empty);
+    padding: none;
+}
+
+.symbol-1 {
+    color: var(--color-1);
+}
+.symbol-2 {
+    color: var(--color-2);
+}
+.symbol-3 {
+    color: var(--color-3);
+}
+.symbol-4 {
+    color: var(--color-4);
+}
+.symbol-5 {
+    color: var(--color-5);
+}
+.symbol-6 {
+    color: var(--color-6);
+}
+.symbol-7 {
+    color: var(--color-7);
+}
+.symbol-8 {
+    color: var(--color-8);
+}
+
+.lost {
+    background-color: var(--lost);
 }
