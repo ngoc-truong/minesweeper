@@ -281,8 +281,6 @@ const DOM = ( () => {
                 let col = field.dataset.col;
                 let row = field.dataset.row;
 
-                //revealNeighborsIfZero(col, row);
-                
                 revealNeighborsIfZero(col, row, toBeRevealed);
 
                 if (board.getBoard()[row][col].fieldRevealed() === false) {
@@ -292,20 +290,6 @@ const DOM = ( () => {
             });
         });
     }
-
-/*
-    Pseudocode
-    function revealNeighborsIfZero(column, row) {
-        if (field[row][column] === 0) {
-            Loop through the neighbors (row)
-                Loop through the neighbors (column)
-                    Open neighbor if it's not already opened
-                    revealNeighborsIfZero(column, row);
-                    // Or here? Open neighbor if it's not already opened
-        }
-        return;
-    }
-*/
 
     const revealNeighborsIfZero = (col, row, toBeRevealed) => {
         
@@ -318,10 +302,12 @@ const DOM = ( () => {
                 let y = Number(neighbor[1]);
                 let neighborDom = document.querySelector(`#coordinates-${x}-${y}`);
                 
-                // Only reveal the fields which are currently unrevealed
+                // Only reveal neighbors which are currently unrevealed
                 if (board.getBoard()[y][x].fieldRevealed() === false){
                     board.getBoard()[y][x].reveal();
-                    neighborDom.textContent = board.getBoard()[y][x].value;
+                    if (Number(board.getBoard()[y][x].value) !== 0){
+                        neighborDom.textContent = board.getBoard()[y][x].value;
+                    }
                 }
                 
                 // If neighbor is 0
@@ -348,7 +334,6 @@ DOM.createBoard();
 
 
 /* ToDo
-    - When clicking on a "0" all neighboring "0"s should open as well => Recursion?
     - When clicking on an "X" end the game
     - When all fields are revealed, end the game
     - Dynamically change width of container when choosing a level (beginner, ...)
