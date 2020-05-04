@@ -4,6 +4,7 @@
     --field: #bdbdbd;
     --field-border-top: #ffffff;
     --field-border-bottom: #7b7b7b;
+    --container-border: #bdbdbd;
     --color-1: #0000ff;
     --color-2: #007b00;
     --color-3: #ff0000;
@@ -13,43 +14,125 @@
     --color-7: #030303;
     --color-8: #808080;
     --lost: #ff0000;
+    --digits: #ff0000;
+    --digits-shadow: #7b0000;
+    --digits-background: #000000;
 }
 
+body {
+    background-image: url("images/windows-xp-background.jpg")
+}
 body, button {
     font-family: 'Jost', sans-serif; 
     font-weight: bold;
+    display: grid;
+    grid-template-columns: 1fr 8fr 1fr;
+    color: rgb(54, 54, 54);
+}
+
+.icon {
+    margin-bottom: 2em;
+    margin-left: 1em;
+}
+
+.icon button {
+    text-align: center;
+    background-color: transparent;
+    border: none;
+    padding-left: 1.5em;
+}
+
+#beginner-btn {
+    padding-left: 2.2em;
+}
+
+#expert-btn {
+    padding-left: 2.9em;
+}
+
+.desktop-icons {
+    width: 40%;
 }
 
 #settings {
     text-align: center;
+    margin: 2em 1em;
+}
+
+#display {
+    background-color: var(--field);
+    height: 75px;
+    width: 92%;
+    margin: 14px auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.display-number, .display-picture {
+    background-color: var(--digits-background);
+    margin: 10px 10px;
+    height: 55px;
+}
+.display-number {
+    width: 90px;
+    color: var(--digits);
+    font-size: 46px;
+    text-align: center;
+    line-height: 55px;
+}
+
+.display-picture {
+    width: 60px;
+    margin: 10px auto;
+    background-color:  var(--field);
 }
 
 #game-container{
     display: grid;
-    margin: 2.5em auto;
+    margin: 0 auto;
+}
+#digits-right {
+    justify-self: end;
+}
+
+#display, #game-container{
+    border: 5px solid var(--container-border);
+    border-left-color: var(--field-border-bottom);
+    border-top-color: var(--field-border-bottom);
+    border-right-color: var(--field-border-top);
+    border-bottom-color: var(--field-border-top);
+}
+
+#container {
+    margin: 1.8em auto;
+    background-color: var(--field);
 }
 
 .field {
-    width: 55px;
-    height: 50px;
+    width: 37px;
+    height: 37px;
     background-color: var(--field);
+    font-size: 1.2em;
+}
+
+#container, .field, .display-picture {
     border: 5px solid var(--field);
     border-left-color: var(--field-border-top);
     border-top-color: var(--field-border-top);
     border-right-color: var(--field-border-bottom);
     border-bottom-color: var(--field-border-bottom);
-    font-size: 1.5em;
 }
-
 .symbol-0 {
     border: solid 1px var(--empty-border);
     background-color: var(--empty);
     padding: none;
 }
 
+.symbol-0:after {
+    content: "";
+}
 .symbol-1 {
     color: var(--color-1);
-    content: "";
 }
 .symbol-2 {
     color: var(--color-2);

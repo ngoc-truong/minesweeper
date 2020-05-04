@@ -201,7 +201,9 @@ const Board = (columns, rows, mines) => {
 const Game = ( () => {
     let board; 
     let fields;
-    const container     = document.querySelector("#game-container");
+    const display       = document.querySelector("#display");
+    const gameContainer = document.querySelector("#game-container");
+    const container     = document.querySelector("#container");    
     const beginner      = document.querySelector("#beginner");
     const intermediate  = document.querySelector("#intermediate");
     const expert        = document.querySelector("#expert");
@@ -241,19 +243,19 @@ const Game = ( () => {
 
     // Game logic methods
     const start = () => {
+        startCanvas();
+
         beginner.addEventListener("click", (e) => {
-            board = Board(9, 9, 10);
-            board.createCompleteBoard();
-            createDom("beginner");
-            container.setAttribute("style", `grid-template-columns: repeat(${columns}, 1fr); width: 26% !important`);
-            revealFieldAfterClick();
+            startCanvas();
         });
 
         intermediate.addEventListener("click", (e) => {
             board = Board(16, 16, 40);
             board.createCompleteBoard();
             createDom("intermediate");
-            container.setAttribute("style", `grid-template-columns: repeat(${columns}, 1fr); width: 46.5% !important`);
+            gameContainer.setAttribute("style", `grid-template-columns: repeat(${columns}, 1fr); width: 590px !important`);
+            container.setAttribute("style", "height: 724px; width: 622px");
+            display.setAttribute("style","width: 590px");
             revealFieldAfterClick();
         });
 
@@ -261,10 +263,22 @@ const Game = ( () => {
             board = Board(30, 16, 99);
             board.createCompleteBoard();
             createDom("expert");
-            container.setAttribute("style", `grid-template-columns: repeat(${columns}, 1fr); width: 87% !important`);
+            gameContainer.setAttribute("style", `grid-template-columns: repeat(${columns}, 1fr); width: 1111px !important`);
+            container.setAttribute("style", "height: 724px; width: 1141px");
+            display.setAttribute("style","width: 1111px");
             revealFieldAfterClick();
         });
     };
+
+    const startCanvas = () => {
+        board = Board(9, 9, 10);
+        board.createCompleteBoard();
+        createDom("beginner");
+        gameContainer.setAttribute("style", `grid-template-columns: repeat(${columns}, 1fr); width: 332px !important`);
+        container.setAttribute("style","height: 465px; width: 360px");
+        display.setAttribute("style","width: 332px");
+        revealFieldAfterClick();
+    }
 
     const won = () => {
         let numbers = getAllNumbers();
@@ -308,14 +322,14 @@ const Game = ( () => {
                 field.dataset.revealed = board.getBoard()[row][col].fieldRevealed();
                 field.textContent = "";
 
-                container.appendChild(field);
+                gameContainer.appendChild(field);
             }
         }
     };
 
     const clearDom = () => {
-        while(container.firstChild) {
-            container.removeChild(container.lastChild);
+        while(gameContainer.firstChild) {
+            gameContainer.removeChild(gameContainer.lastChild);
         }
     }
 
@@ -380,13 +394,14 @@ const Game = ( () => {
                 
                 // If neighbor is 0
                 if (board.getBoard()[y][x].value === 0) {
-                    neighborDom.textContent = "";
+                    
                     // If neighbor is in the toBeRevealed-Array, do nothing (or else infinite recursion)
                     if (toBeRevealed.some(field => field.x === Number(x) && field.y === Number(y))){
                         return;
                     } else {
                         revealNeighborsIfZero(x, y, toBeRevealed);
                     }
+                    neighborDom.textContent = "";
                 } 
             });
         }
