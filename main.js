@@ -23,7 +23,7 @@ const Board = (columns, rows, mines) => {
     let numOfColumns = columns;
     let numOfRows = rows;
     let numOfMines = mines;
-    let mineSymbol = "X";
+    let mineSymbol = "🐒";
 
     // Getter and setter methods
     const getBoard = () => {
@@ -141,7 +141,6 @@ const Board = (columns, rows, mines) => {
         board[row][column].value = sum;
     }
 
-    // Mhh something wrong here, especially when used in DOM
     const getNeighborCoordinates = (column, row) => {
         // Convert to number
         column = Number(column);
@@ -381,6 +380,7 @@ const Game = ( () => {
                 
                 // If neighbor is 0
                 if (board.getBoard()[y][x].value === 0) {
+                    neighborDom.textContent = "";
                     // If neighbor is in the toBeRevealed-Array, do nothing (or else infinite recursion)
                     if (toBeRevealed.some(field => field.x === Number(x) && field.y === Number(y))){
                         return;
@@ -397,6 +397,7 @@ const Game = ( () => {
 })();
 
 Game.start();
+
 
 /* ToDo
     - Styling: Numbers, fields, buttons (retro style like the windows version?)

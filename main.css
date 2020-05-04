@@ -49,6 +49,7 @@ body, button {
 
 .symbol-1 {
     color: var(--color-1);
+    content: "";
 }
 .symbol-2 {
     color: var(--color-2);
