@@ -201,12 +201,24 @@ const Board = (columns, rows, mines) => {
 const Game = ( () => {
     let board; 
     let fields;
-    const display       = document.querySelector("#display");
-    const gameContainer = document.querySelector("#game-container");
-    const container     = document.querySelector("#container");    
-    const beginner      = document.querySelector("#beginner");
-    const intermediate  = document.querySelector("#intermediate");
-    const expert        = document.querySelector("#expert");
+    let bombsLeft;
+    let currentLevel = "beginner";
+    let time = 0;
+    let timer; 
+    let timerStarted = false; 
+
+    const display           = document.querySelector("#display");
+    const displayBombsLeft  = document.querySelector("#display-bombs-left");
+    const displayPicture    = document.querySelector(".display-picture");
+    const displayTime       = document.querySelector("#digits-right");
+    const gameContainer     = document.querySelector("#game-container");
+    const container         = document.querySelector("#container");    
+    const beginner          = document.querySelector("#beginner");
+    const intermediate      = document.querySelector("#intermediate");
+    const expert            = document.querySelector("#expert");
+    const smiley            = document.querySelector("#smiley");
+    
+
 
     // Getter and setter methods
 
@@ -243,40 +255,89 @@ const Game = ( () => {
 
     // Game logic methods
     const start = () => {
-        startCanvas();
+        resetTimer();
+        startBeginner();
 
         beginner.addEventListener("click", (e) => {
-            startCanvas();
+            resetTimer();
+            currentLevel = "beginner";
+            startBeginner();
         });
 
         intermediate.addEventListener("click", (e) => {
-            board = Board(16, 16, 40);
-            board.createCompleteBoard();
-            createDom("intermediate");
-            gameContainer.setAttribute("style", `grid-template-columns: repeat(${columns}, 1fr); width: 590px !important`);
-            container.setAttribute("style", "height: 724px; width: 622px");
-            display.setAttribute("style","width: 590px");
-            revealFieldAfterClick();
+            resetTimer();
+            currentLevel = "intermediate";
+            startIntermediate();
         });
 
         expert.addEventListener("click", (e) => {
-            board = Board(30, 16, 99);
-            board.createCompleteBoard();
-            createDom("expert");
-            gameContainer.setAttribute("style", `grid-template-columns: repeat(${columns}, 1fr); width: 1111px !important`);
-            container.setAttribute("style", "height: 724px; width: 1141px");
-            display.setAttribute("style","width: 1111px");
-            revealFieldAfterClick();
+            resetTimer();
+            currentLevel = "expert";
+            startExpert();
         });
+
+        displayPicture.addEventListener("click", (e) => {
+            resetTimer();
+            if (currentLevel === "beginner"){
+                startBeginner();
+            } else if (currentLevel === "intermediate") {
+                startIntermediate();
+            } else {
+                startExpert();
+            }
+        })
     };
 
-    const startCanvas = () => {
+    const startTimer = () => {
+        clearInterval(timer);
+        timer = setInterval( () => {
+            time++;
+            console.log(time);
+            displayTime.textContent = formatDisplayNumbers(time);
+        }, 1000);
+        timerStarted = true;
+    }
+
+    const resetTimer = () => {
+        clearInterval(timer);
+        time = 0;
+        timerStarted = false;
+        displayTime.textContent = formatDisplayNumbers(time);
+    }
+
+    const startBeginner = () => {
         board = Board(9, 9, 10);
+        bombsLeft = board.getNumOfMines();
+        displayBombsLeft.textContent = formatDisplayNumbers(bombsLeft);
         board.createCompleteBoard();
         createDom("beginner");
         gameContainer.setAttribute("style", `grid-template-columns: repeat(${columns}, 1fr); width: 332px !important`);
         container.setAttribute("style","height: 465px; width: 360px");
         display.setAttribute("style","width: 332px");
+        revealFieldAfterClick();
+    }
+
+    const startIntermediate = () => {
+        board = Board(16, 16, 40);
+        bombsLeft = board.getNumOfMines();
+        displayBombsLeft.textContent = formatDisplayNumbers(bombsLeft);
+        board.createCompleteBoard();
+        createDom("intermediate");
+        gameContainer.setAttribute("style", `grid-template-columns: repeat(${columns}, 1fr); width: 590px !important`);
+        container.setAttribute("style", "height: 724px; width: 622px");
+        display.setAttribute("style","width: 590px");
+        revealFieldAfterClick();
+    }
+
+    const startExpert = () => {
+        board = Board(30, 16, 99);
+        bombsLeft = board.getNumOfMines();
+        displayBombsLeft.textContent = formatDisplayNumbers(bombsLeft);
+        board.createCompleteBoard();
+        createDom("expert");
+        gameContainer.setAttribute("style", `grid-template-columns: repeat(${columns}, 1fr); width: 1111px !important`);
+        container.setAttribute("style", "height: 724px; width: 1141px");
+        display.setAttribute("style","width: 1111px");
         revealFieldAfterClick();
     }
 
@@ -294,10 +355,10 @@ const Game = ( () => {
 
         // Reveal all bombs
         let bombs = getAllOf(board.getMineSymbol());
+        smiley.src = "images/ngoc-lose.png";
         revealAll(bombs);
         disableFields();
-
-        // TODO: Change smiley icon to restart
+        resetTimer();
     };
 
     const disableFields = () => {
@@ -305,6 +366,8 @@ const Game = ( () => {
             field.disabled = true;
         })
     }
+
+
 
     // DOM methods
     const createDom = (difficulty) => {
@@ -346,9 +409,14 @@ const Game = ( () => {
         let toBeRevealed = []
 
         fields.forEach( (field) => {
+            // Listener for click
             field.addEventListener("click", (e) => {
                 let col = field.dataset.col;
                 let row = field.dataset.row;
+
+                if (!timerStarted){
+                    startTimer();
+                }
 
                 revealNeighborsIfZero(col, row, toBeRevealed);
 
@@ -365,14 +433,56 @@ const Game = ( () => {
 
                     // Win? 
                     if(won()) {
-                        alert("You won!");
+                        smiley.src = "images/ngoc-win.png";
+                        alert(`Yeah, you won! In ${time} seconds. You saved this litte guy: 🐒`);
+                        resetTimer();
                         disableFields();
                     }
                 }
             });
+
+            // Listener for right click
+            field.addEventListener("contextmenu", (e) => {
+                e.preventDefault();
+                if (field.textContent === "⚑"){
+                    field.textContent = "";
+                    bombsLeft++;
+                    displayBombsLeft.textContent = formatDisplayNumbers(bombsLeft);
+
+                } else {
+                    if (bombsLeft > 0){
+                        field.textContent = "⚑";
+                        bombsLeft--;
+                        displayBombsLeft.textContent = formatDisplayNumbers(bombsLeft);
+                    }
+                }
+                return false;
+            }, false);
+
+            // Listener for click hold
+            field.addEventListener("mousedown", (e) => {
+                smiley.src = "images/ngoc-attention.png";
+            })
+
+            // Listener for click hold
+            field.addEventListener("mouseup", (e) => {
+                smiley.src = "images/ngoc-default.png";
+            })
         });
     }
+    const formatDisplayNumbers = (number) => {
+        let display = "";
 
+        if (number >= 0 && number < 10) {
+            display = `00${number}`;
+        } else if (number >= 10 && number < 100){
+            display = `0${number}`;
+        } else {
+            display = number;
+        }
+
+        return display;
+    }
     const revealNeighborsIfZero = (col, row, toBeRevealed) => {
         if (board.getBoard()[row][col].value === 0) {
             toBeRevealed.push(board.getBoard()[row][col]);
@@ -416,7 +526,6 @@ Game.start();
 
 /* ToDo
     - Styling: Numbers, fields, buttons (retro style like the windows version?)
-    - Important styling: Show all 0 (or at least in a different co: https://stackoverflow.com/questions/4235426/how-can-i-capture-the-right-click-event-in-javascript
     - Little bug: If 0 is at the corner and there is no adjacent 0, then the number will be showed
 
     Nice to have

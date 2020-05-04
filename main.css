@@ -61,7 +61,7 @@ body, button {
 
 #display {
     background-color: var(--field);
-    height: 75px;
+    height: 80px;
     width: 92%;
     margin: 14px auto;
     display: grid;
@@ -71,20 +71,27 @@ body, button {
 .display-number, .display-picture {
     background-color: var(--digits-background);
     margin: 10px 10px;
-    height: 55px;
+    height: 60px;
 }
 .display-number {
     width: 90px;
     color: var(--digits);
     font-size: 46px;
     text-align: center;
-    line-height: 55px;
+    line-height: 60px;
 }
 
 .display-picture {
     width: 60px;
     margin: 10px auto;
     background-color:  var(--field);
+    height: 50px;
+}
+
+#smiley {
+    width: 46px;
+    display: block;
+    margin: 0 auto;
 }
 
 #game-container{
