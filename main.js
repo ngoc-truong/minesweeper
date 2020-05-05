@@ -239,6 +239,11 @@ const Game = ( () => {
         return numbers;
     }
 
+
+    const getField = (col, row) => {
+        return board.getBoard()[row][col];
+    }
+
     // Works with numbers and "X" or board.getMineSymbol()
     const getAllOf = (symbol) => {
         let elements = [];
@@ -260,24 +265,28 @@ const Game = ( () => {
 
         beginner.addEventListener("click", (e) => {
             resetTimer();
+            smiley.src = "images/ngoc-default.png";
             currentLevel = "beginner";
             startBeginner();
         });
 
         intermediate.addEventListener("click", (e) => {
             resetTimer();
+            smiley.src = "images/ngoc-default.png";
             currentLevel = "intermediate";
             startIntermediate();
         });
 
         expert.addEventListener("click", (e) => {
             resetTimer();
+            smiley.src = "images/ngoc-default.png";
             currentLevel = "expert";
             startExpert();
         });
 
         displayPicture.addEventListener("click", (e) => {
             resetTimer();
+            smiley.src = "images/ngoc-default.png";
             if (currentLevel === "beginner"){
                 startBeginner();
             } else if (currentLevel === "intermediate") {
@@ -292,7 +301,6 @@ const Game = ( () => {
         clearInterval(timer);
         timer = setInterval( () => {
             time++;
-            console.log(time);
             displayTime.textContent = formatDisplayNumbers(time);
         }, 1000);
         timerStarted = true;
@@ -367,8 +375,6 @@ const Game = ( () => {
         })
     }
 
-
-
     // DOM methods
     const createDom = (difficulty) => {
         clearDom();
@@ -423,7 +429,11 @@ const Game = ( () => {
                 if (board.getBoard()[row][col].fieldRevealed() === false) {
                     
                     field.classList.add(`symbol-${board.getBoard()[row][col].value}`)
-                    field.textContent = board.getBoard()[row][col].value;   
+
+                    if (board.getBoard()[row][col].value !== 0) {
+                        field.textContent = board.getBoard()[row][col].value;   
+                    }
+
                     board.getBoard()[row][col].reveal();
 
                     // Lost?
@@ -443,14 +453,19 @@ const Game = ( () => {
 
             // Listener for right click
             field.addEventListener("contextmenu", (e) => {
+                
                 e.preventDefault();
+                console.log(field);
+                let row = field.dataset.row;
+                let col = field.dataset.col;
+              
                 if (field.textContent === "⚑"){
                     field.textContent = "";
                     bombsLeft++;
                     displayBombsLeft.textContent = formatDisplayNumbers(bombsLeft);
 
                 } else {
-                    if (bombsLeft > 0){
+                    if (bombsLeft > 0 && !getField(col, row).fieldRevealed()){
                         field.textContent = "⚑";
                         bombsLeft--;
                         displayBombsLeft.textContent = formatDisplayNumbers(bombsLeft);
@@ -518,16 +533,16 @@ const Game = ( () => {
         return;
     }
 
-    return { start, getBoardObject, getAllNumbers, getAllOf, revealAll  };
+    return { start, getBoardObject, getAllNumbers, getAllOf, revealAll };
 })();
 
 Game.start();
 
 
 /* ToDo
-    - Styling: Numbers, fields, buttons (retro style like the windows version?)
     - Little bug: If 0 is at the corner and there is no adjacent 0, then the number will be showed
-
+    - Another bug: Color of a flag is changing, when flagging an open number
+    - Bug: User should not be allowed to flag open fields (because they disappear)
     Nice to have
     - Timer to measure time
     - Save time in localstorage
