@@ -74,9 +74,10 @@ body, button {
     height: 60px;
 }
 .display-number {
+    font-family: 'Orbitron', sans-serif;
     width: 90px;
     color: var(--digits);
-    font-size: 46px;
+    font-size: 34px;
     text-align: center;
     line-height: 60px;
 }
