@@ -540,9 +540,6 @@ Game.start();
 
 
 /* ToDo
-    - Little bug: If 0 is at the corner and there is no adjacent 0, then the number will be showed
-    - Another bug: Color of a flag is changing, when flagging an open number
-    - Bug: User should not be allowed to flag open fields (because they disappear)
     Nice to have
     - Timer to measure time
     - Save time in localstorage
